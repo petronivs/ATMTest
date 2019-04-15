@@ -1,0 +1,47 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>ATMTest</name>
+    </assembly>
+    <members>
+        <member name="M:ATMTest.ATMClass.Restock">
+            <summary>
+            reset cash drawers.
+            </summary>
+        </member>
+        <member name="M:ATMTest.ATMClass.Withdraw(System.Int32)">
+            <summary>
+            withdraw money from ATM.  Just return amount for now.
+            </summary>
+            <param name="amount"> amount withdrawn</param>
+            <returns></returns>
+        </member>
+        <member name="M:ATMTest.ATMClass.Inventory">
+            <summary>
+            list the inventory in the ATM.
+            make sure to cast to a list when calling. 
+            </summary>
+            <returns>a tuple list listing the label and value in each drawer</returns>
+        </member>
+        <member name="T:ATMTest.ATMDrawer">
+            <summary>
+            a drawer of banknotes
+            </summary>
+        </member>
+        <member name="P:ATMTest.ATMDrawer.value">
+            <summary>
+            the value of each bill in the drawer
+            </summary>
+        </member>
+        <member name="P:ATMTest.ATMDrawer.inventory">
+            <summary>
+            the number of bills in the drawer
+            </summary>
+        </member>
+        <member name="P:ATMTest.ATMDrawer.TotalValue">
+            <summary>
+            the total value of this drawer.
+            </summary>
+        </member>
+    </members>
+</doc>
