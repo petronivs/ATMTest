@@ -33,12 +33,12 @@ namespace ATMTest
         {
             CashDrawers = new List<(string, ATMDrawer)>
             {
-                ( "$100", new ATMDrawer{value=100, inventory=10 } ),
-                ( "$50", new ATMDrawer{value=50, inventory=10 } ),
-                ( "$20", new ATMDrawer{value=20, inventory=10 } ),
-                ( "$10", new ATMDrawer{value=10, inventory=10 } ),
-                ( "$5", new ATMDrawer{value=5, inventory=5 } ),
-                ("$1", new ATMDrawer{value=1, inventory=5 } )
+                ( "$100", new ATMDrawer(100, 10 ) ),
+                ( "$50", new ATMDrawer(50, 10 ) ),
+                ( "$20", new ATMDrawer(20, 10 ) ),
+                ( "$10", new ATMDrawer(10, 10 ) ),
+                ( "$5", new ATMDrawer(5, 10 ) ),
+                ("$1", new ATMDrawer(1, 10 ) )
             };
 
             return;
@@ -53,36 +53,52 @@ namespace ATMTest
         {
             if (amount > TotalFunds) throw new Exception("Insufficient Funds");
             int returnAmount = 0;
+            List<(string, ATMDrawer)> backupATMState = Copy(CashDrawers);
+
             try
             {
                 // start making passes through inventory
-                while(amount > 0)
+                while (amount > 0)
                 {
                     int tempReturnAmount = returnAmount;
 
                     // see if we can pull a bill out of a drawer to return.
                     // TODO: ensure this is sorted big to small.
-                    foreach((string, ATMDrawer) drawer in CashDrawers)
+                    foreach ((string, ATMDrawer) drawer in CashDrawers)
                     {
                         // enough money in drawer and enough bills to pull one out?
-                        if(drawer.Item2.value < amount && drawer.Item2.inventory > 0)
+                        if(drawer.Item2.value <= amount && drawer.Item2.inventory > 0)
                         {
                             tempReturnAmount += drawer.Item2.value;
                             drawer.Item2.inventory--;
+                            amount -= drawer.Item2.value;
                             break;
                         }
                     }
 
-                    if (tempReturnAmount == returnAmount) {throw new Exception("insufficient bills for amount requested");}
+                    if (tempReturnAmount == returnAmount) { throw new InvalidOperationException("insufficient funds"); }
                     else { returnAmount = tempReturnAmount; }
                 }
             }
-            catch(Exception ex)
+            catch(InvalidOperationException ex)
             {
+                // roll back the transaction
+                CashDrawers = Copy(backupATMState);
                 throw;
             }
 
             return returnAmount;
+        }
+
+        private List<(string, ATMDrawer)> Copy(List<(string, ATMDrawer)> cashDrawers)
+        {
+            List<(string, ATMDrawer)> returnList = new List<(string, ATMDrawer)>();
+
+            foreach((string, ATMDrawer) newDrawer in cashDrawers)
+            {
+                returnList.Add((newDrawer.Item1, new ATMDrawer(newDrawer.Item2.value, newDrawer.Item2.inventory)));
+            }
+            return returnList;
         }
 
         /// <summary>
@@ -97,6 +113,15 @@ namespace ATMTest
                 yield return (drawer.Item1, drawer.Item2.inventory);
             }
         }
+
+        public IEnumerable<(string, int)> Inventory(string[] drawers)
+        {
+            foreach(string drawer in drawers)
+            {
+                (string, ATMDrawer) activeDrawer = CashDrawers.Find(foundDrawer => foundDrawer.Item1 == drawer);
+                yield return (activeDrawer.Item1, activeDrawer.Item2.inventory);
+            }
+        }
     }
 
     /// <summary>
@@ -104,6 +129,12 @@ namespace ATMTest
     /// </summary>
     internal class ATMDrawer
     {
+        public ATMDrawer(int value, int inventory)
+        {
+            this.value = value;
+            this.inventory = inventory;
+        }
+
         // TODO: add internationalization for foreign banknotes
         /// <summary>
         /// the value of each bill in the drawer
